@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>This Week's Mission</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; background: #0a0e1a; font-family: 'Helvetica Neue', Arial, sans-serif; overflow: hidden; color: #fff; }
+  .stage { position: relative; width: 100vw; height: 100vh; max-height: 100dvh; display: flex; align-items: center; justify-content: center; background: radial-gradient(ellipse at center, #1a2438 0%, #0a0e1a 80%); overflow: hidden; }
+
+  .scene { position: absolute; width: 88%; text-align: center; opacity: 0; transform: translateY(20px); padding: 20px; z-index: 5; }
+  .scene.active { animation: fadeInUp 0.9s ease forwards; }
+  .scene.exit { animation: fadeOut 0.6s ease forwards; }
+  @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeOut { to { opacity: 0; transform: translateY(-20px); } }
+
+  .tag { font-size: 11px; letter-spacing: 3px; color: #f4b942; text-transform: uppercase; margin-bottom: 14px; font-weight: 600; }
+  h1 { font-size: 38px; font-weight: 800; line-height: 1.1; margin-bottom: 14px; letter-spacing: -1px; }
+  h2 { font-size: 32px; font-weight: 700; line-height: 1.15; margin-bottom: 18px; }
+  .subtitle { font-size: 17px; color: #cbd5e1; line-height: 1.5; font-weight: 300; }
+  .rule { font-size: 28px; font-weight: 700; line-height: 1.25; margin-bottom: 14px; }
+  .rule-num { display: block; color: #f4b942; font-weight: 800; font-size: 18px; letter-spacing: 4px; margin-bottom: 12px; }
+  .verse { font-style: italic; font-size: 19px; line-height: 1.5; color: #e2e8f0; margin-bottom: 14px; font-weight: 300; }
+  .verse-ref { font-size: 13px; color: #f4b942; letter-spacing: 2px; font-weight: 600; }
+  .big-line { font-size: 42px; font-weight: 800; line-height: 1.1; background: linear-gradient(135deg, #f4b942 0%, #ffd97a 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .scripture-box { border-left: 3px solid #f4b942; padding-left: 16px; text-align: left; }
+
+  .progress { position: absolute; bottom: 0; left: 0; height: 4px; background: #f4b942; width: 0; transition: width 0.1s linear; z-index: 30; }
+  .glow { position: absolute; width: 320px; height: 320px; background: radial-gradient(circle, rgba(244,185,66,0.15) 0%, transparent 70%); border-radius: 50%; pointer-events: none; animation: pulse 4s ease-in-out infinite; z-index: 1; }
+  @keyframes pulse { 0%,100% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.2); opacity: 0.8; } }
+
+  .start-screen { position: absolute; inset: 0; background: radial-gradient(ellipse at center, #1a2438 0%, #0a0e1a 80%); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; text-align: center; padding: 20px; }
+  .start-screen.hidden { display: none; }
+  .play-btn { width: 96px; height: 96px; border-radius: 50%; background: linear-gradient(135deg, #f4b942 0%, #ffd97a 100%); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; margin: 28px 0; box-shadow: 0 0 60px rgba(244,185,66,0.4); }
+  .start-hint { color: #94a3b8; font-size: 12px; margin-top: 14px; letter-spacing: 1px; }
+
+  .baptism-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #000; z-index: 0; opacity: 0; transition: opacity 1.5s ease; }
+  .baptism-bg.visible { opacity: 1; }
+  .baptism-overlay { position: absolute; inset: 0; background: transparent; z-index: 1; opacity: 0; transition: opacity 1.5s ease; }
+  .baptism-overlay.visible { opacity: 1; }
+
+  .end-screen { position: absolute; inset: 0; background: radial-gradient(ellipse at center, #1a2438 0%, #0a0e1a 80%); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 60; padding: 20px; }
+  .end-screen.visible { display: flex; }
+  .deadline-banner { background: linear-gradient(135deg, #dc2626 0%, #f4b942 100%); color: #fff; padding: 8px 20px; border-radius: 30px; font-weight: 800; font-size: 12px; letter-spacing: 2px; margin-bottom: 18px; box-shadow: 0 0 30px rgba(220,38,38,0.4); animation: pulseBanner 2s ease-in-out infinite; }
+  @keyframes pulseBanner { 0%,100% { transform: scale(1); } 50% { transform: scale(1.04); } }
+  .end-screen h2 { font-size: 22px; margin-bottom: 18px; }
+  .video-wrap { width: 100%; max-width: 360px; aspect-ratio: 9/16; max-height: 60vh; background: #000; border-radius: 12px; overflow: hidden; box-shadow: 0 0 60px rgba(244,185,66,0.2); }
+  .video-wrap iframe { width: 100%; height: 100%; border: none; }
+  .end-cta { margin-top: 18px; font-size: 15px; color: #cbd5e1; text-align: center; }
+  .end-cta strong { color: #f4b942; }
+
+  .btn { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 10px 20px; border-radius: 24px; font-size: 13px; cursor: pointer; font-weight: 600; letter-spacing: 1px; }
+  .audio-toggle { position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: #fff; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 70; }
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <div class="start-screen" id="startScreen">
+    <div class="tag">Life Group</div>
+    <h1 style="margin-bottom: 8px; font-size: 32px;">This Week's<br>Mission</h1>
+    <p class="subtitle">Tap play. Sound on.</p>
+    <button class="play-btn" onclick="beginShow()" aria-label="Play">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="#0a0e1a" style="margin-left:5px;"><path d="M8 5v14l11-7z"/></svg>
+    </button>
+    <p class="start-hint">MUSIC: BROTHER JOE</p>
+  </div>
+
+  <video class="baptism-bg" id="baptismBg" muted playsinline preload="auto">
+    <source src="baptism.mp4" type="video/mp4">
+  </video>
+  <div class="baptism-overlay" id="baptismOverlay"></div>
+
+  <div class="glow"></div>
+
+  <div class="scene" id="s1">
+    <div class="tag">Life Group</div>
+    <h1>This Week's<br>Mission</h1>
+    <p class="subtitle">Simple. Bold. Real.</p>
+  </div>
+  <div class="scene" id="s2">
+    <div class="tag">The Mission</div>
+    <h2 class="big-line">Talk to one stranger about Jesus.</h2>
+  </div>
+  <div class="scene" id="s3">
+    <div class="tag">The Rules</div>
+    <p class="subtitle">Five simple things.</p>
+  </div>
+  <div class="scene" id="s4"><div class="rule"><span class="rule-num">RULE 01</span>One person.<br>One conversation.</div></div>
+  <div class="scene" id="s5"><div class="rule"><span class="rule-num">RULE 02</span>Be normal.<br>Be kind.<br>Be honest.</div></div>
+  <div class="scene" id="s6"><div class="rule"><span class="rule-num">RULE 03</span>Mention His name<br>out loud.</div></div>
+  <div class="scene" id="s7"><div class="rule"><span class="rule-num">RULE 04</span>Listen more<br>than you talk.</div></div>
+  <div class="scene" id="s8"><div class="rule"><span class="rule-num">RULE 05</span>Report back<br>Sunday.</div></div>
+  <div class="scene" id="s9">
+    <h2>You don't need<br>a script.</h2>
+    <p class="big-line" style="margin-top: 16px; font-size: 36px;">You need courage<br>and a smile.</p>
+  </div>
+  <div class="scene" id="s10">
+    <div class="scripture-box">
+      <p class="verse">"Always be prepared to give an answer to everyone who asks you the reason for the hope that you have."</p>
+      <p class="verse-ref">— 1 PETER 3:15</p>
+    </div>
+  </div>
+  <div class="scene" id="s11">
+    <div class="tag">Go Do It</div>
+    <h1 class="big-line">One person.<br>This week.</h1>
+    <p class="subtitle" style="margin-top: 18px;">See you Sunday.</p>
+  </div>
+  <div class="scene" id="s12">
+    <div class="tag">Joe & Coleman</div>
+    <h2>New life.</h2>
+    <p class="subtitle" style="margin-top: 10px;">This is what we're inviting people into.</p>
+  </div>
+
+  <div class="end-screen" id="endScreen">
+    <div class="deadline-banner">⏰ WATCH BEFORE FRIDAY</div>
+    <h2>Two minutes.<br>Let it sit.</h2>
+    <div class="video-wrap">
+      <iframe id="ytPlayer" src="" title="Watch this next"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen></iframe>
+    </div>
+    <p class="end-cta">Then go.<br><strong>One person. This week.</strong></p>
+    <div style="margin-top: 16px;"><button class="btn" onclick="restart()">↻ Replay</button></div>
+  </div>
+
+  <button class="audio-toggle" id="audioToggle" onclick="toggleAudio()" style="display:none;" aria-label="Toggle sound">
+    <svg id="iconSound" width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+  </button>
+
+  <div class="progress" id="progress"></div>
+</div>
+
+<audio id="bgMusic" loop preload="auto">
+  <source src="music.m4a" type="audio/mp4">
+</audio>
+
+<script>
+  const scenes = [
+    { id: 's1', duration: 3500 },
+    { id: 's2', duration: 4000 },
+    { id: 's3', duration: 2500 },
+    { id: 's4', duration: 3000 },
+    { id: 's5', duration: 3000 },
+    { id: 's6', duration: 3000 },
+    { id: 's7', duration: 3000 },
+    { id: 's8', duration: 3000 },
+    { id: 's9', duration: 4000 },
+    { id: 's10', duration: 6000 },
+    { id: 's11', duration: 5000 },
+    { id: 's12', duration: 58000, showBaptism: true, fadeTextAt: 6000 }
+  ];
+  const YOUTUBE_ID = 'ONfrloQtLRQ';
+  const totalDuration = scenes.reduce((a, b) => a + b.duration, 0);
+  let startTime = null;
+  let audio = document.getElementById('bgMusic');
+  let baptismVid = document.getElementById('baptismBg');
+  let baptismOverlay = document.getElementById('baptismOverlay');
+  let muted = false;
+
+  function beginShow() {
+    document.getElementById('startScreen').classList.add('hidden');
+    document.getElementById('audioToggle').style.display = 'flex';
+    audio.volume = 0.4;
+    audio.play().catch(()=>{});
+    start();
+  }
+  function toggleAudio() {
+    muted = !muted; audio.muted = muted;
+    const icon = document.getElementById('iconSound');
+    if (muted) icon.innerHTML = '<path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.17v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>';
+    else icon.innerHTML = '<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>';
+  }
+  function playScene(i) {
+    if (i >= scenes.length) { showEndScreen(); return; }
+    scenes.forEach(s => { const el=document.getElementById(s.id); el.classList.remove('active'); el.classList.remove('exit'); });
+    const sc = scenes[i]; const el = document.getElementById(sc.id); el.classList.add('active');
+    if (sc.showBaptism) { baptismVid.classList.add('visible'); baptismOverlay.classList.add('visible'); baptismVid.currentTime=0; baptismVid.play().catch(()=>{}); }
+    const textFadeTime = sc.fadeTextAt || sc.duration;
+    setTimeout(() => { el.classList.remove('active'); el.classList.add('exit'); }, textFadeTime);
+    setTimeout(() => { playScene(i+1); }, sc.duration + 400);
+  }
+  function showEndScreen() {
+    document.getElementById('endScreen').classList.add('visible');
+    lowerMusicVolume(2000, 0.08); baptismVid.pause();
+    document.getElementById('ytPlayer').src = 'https://www.youtube.com/embed/' + YOUTUBE_ID + '?autoplay=1&rel=0';
+  }
+  function lowerMusicVolume(duration, targetVol) {
+    const sv = audio.volume; const steps=40; const st=duration/steps; let i=0;
+    const f=setInterval(()=>{ i++; audio.volume = Math.max(targetVol, sv - (sv-targetVol)*(i/steps)); if (i>=steps) clearInterval(f); }, st);
+  }
+  function fadeOutMusic(d) {
+    const sv = audio.volume; const steps=30; const st=d/steps; let i=0;
+    const f=setInterval(()=>{ i++; audio.volume = Math.max(0, sv*(1-i/steps)); if (i>=steps) { clearInterval(f); audio.pause(); } }, st);
+  }
+  function updateProgress() {
+    if (!startTime) return;
+    const e = Date.now()-startTime; const p = Math.min(100, (e/totalDuration)*100);
+    document.getElementById('progress').style.width = p + '%';
+    if (e < totalDuration) requestAnimationFrame(updateProgress);
+  }
+  function start() { startTime=Date.now(); document.getElementById('progress').style.width='0%'; requestAnimationFrame(updateProgress); playScene(0); }
+  function restart() {
+    document.getElementById('endScreen').classList.remove('visible');
+    document.getElementById('ytPlayer').src='';
+    baptismVid.classList.remove('visible'); baptismOverlay.classList.remove('visible');
+    baptismVid.pause(); baptismVid.currentTime=0;
+    scenes.forEach(s => { const el=document.getElementById(s.id); el.classList.remove('active'); el.classList.remove('exit'); el.style.opacity=0; });
+    audio.currentTime=0; audio.volume=0.4; audio.play().catch(()=>{});
+    setTimeout(start, 200);
+  }
+</script>
+</body>
+</html>

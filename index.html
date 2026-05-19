@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Talk About Jesus | This Week's Mission</title>
+<meta property="og:title" content="This Week's Mission: Talk About Jesus">
+<meta property="og:description" content="One person. One conversation. This week.">
+<meta property="og:type" content="website">
+<script>
+  // Auto-detect: mobile/portrait gets reels, everything else gets desktop
+  (function() {
+    const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const isPortrait = window.innerHeight > window.innerWidth;
+    if (isMobile || isPortrait) {
+      window.location.replace('reels.html');
+    } else {
+      window.location.replace('desktop.html');
+    }
+  })();
+</script>
+<style>
+  body { background: #0a0e1a; color: #fff; font-family: system-ui, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; text-align: center; }
+  a { color: #f4b942; }
+</style>
+</head>
+<body>
+<div>
+  <p>Loading mission...</p>
+  <p style="font-size: 14px; opacity: 0.6; margin-top: 20px;">If you're not redirected: <a href="desktop.html">Desktop</a> or <a href="reels.html">Mobile</a></p>
+</div>
+</body>
+</html>
